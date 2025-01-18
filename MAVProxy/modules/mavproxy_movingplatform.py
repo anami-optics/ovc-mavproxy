@@ -15,18 +15,18 @@ import serial
 if mp_util.has_wxpython:
     from MAVProxy.modules.lib.mp_menu import *
 
-class FollowTestModule(mp_module.MPModule):
+class MovingPlatformModule(mp_module.MPModule):
     def __init__(self, mpstate):
-        super(FollowTestModule, self).__init__(mpstate, "followtest", "followtest module")
-        self.add_command('followtest', self.cmd_followtest, "followtest control",
-                         ['set (FOLLOWSETTING)'])
+        super(MovingPlatformModule, self).__init__(mpstate, "movingplatform", "movingplatform module")
+        self.add_command('movingplatform', self.cmd_movingplatform, "movingplatform control",
+                         ['set (SETTINGS)'])
         self.follow_settings = mp_settings.MPSettings([("radius", float, 100.0),
                                                        ("altitude", float, 50.0),
                                                        ("speed", float, 10.0),
                                                        ("type", str, 'guided'),
                                                        ("vehicle_throttle", float, 0.5),
                                                        ("disable_msg", bool, False)])
-        self.add_completion_function('(FOLLOWSETTING)', self.follow_settings.completion)
+        self.add_completion_function('(SETTINGS)', self.follow_settings.completion)
         self.target_pos = None
         self.last_update = 0
         self.circle_dist = 0
@@ -56,9 +56,9 @@ class FollowTestModule(mp_module.MPModule):
             decimal = -decimal
         return decimal
 
-    def cmd_followtest(self, args):
-        '''followtest command parser'''
-        usage = "usage: followtest <set>"
+    def cmd_movingplatform(self, args):
+        '''movingplatform command parser'''
+        usage = "usage: movingplatform <set>"
         if len(args) == 0:
             print(usage)
             return
@@ -93,7 +93,7 @@ class FollowTestModule(mp_module.MPModule):
 
         icon = self.mpstate.map.icon('camera-small-red.png')
         (lat, lon) = (self.target_pos[0], self.target_pos[1])
-        self.mpstate.map.add_object(mp_slipmap.SlipIcon('followtest',
+        self.mpstate.map.add_object(mp_slipmap.SlipIcon('movingplatform',
                                                         (lat, lon),
                                                         icon, layer='FollowTest', rotation=0, follow=False))
 
@@ -146,4 +146,4 @@ class FollowTestModule(mp_module.MPModule):
 
 def init(mpstate):
     '''initialise module'''
-    return FollowTestModule(mpstate)
+    return MovingPlatformModule(mpstate)
