@@ -11,7 +11,7 @@ class JoystickFollowGCSModule(mp_module.MPModule):
 
         self.altitude = 10.0  # Target altitude (meters)
         self.acceptance_radius = 5.0  # Acceptance radius (meters)
-        self.gps_device = "/dev/ttyUSB0"  # GPS device path
+        self.gps_device = "/dev/ttyACM0"  # GPS device path
         self.baud_rate = 9600  # GPS device baud rate
         self.enable_joystick = True  # Enable joystick control
 

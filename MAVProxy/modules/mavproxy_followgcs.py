@@ -7,18 +7,22 @@ import time
 class FollowGCSModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(FollowGCSModule, self).__init__(mpstate, "followgcs", "Follow Ground Station Coordinates")
-        self.add_command("followgcs", self.cmd_followgsc, "Start/Stop following the GSC GPS")
+        self.add_command("start", self.cmd_start, "Start/Stop following the GSC GPS")
+        self.add_command("alt", self.cmd_set_altitude, "Set target altitude")
+        self.add_command("radius", self.cmd_set_acceptance_radius, "Set acceptance radius")
+        self.add_command("device", self.cmd_set_gps_device, "Set GPS device path")
+        self.add_command("baud", self.cmd_set_baud_rate, "Set GPS device baud rate")
 
         self.altitude = 10.0  # Target altitude (meters)
         self.acceptance_radius = 5.0  # Acceptance radius (meters)
-        self.gps_device = "/dev/ttyUSB0"  # GPS device path
+        self.gps_device = "/dev/ttyACM0"  # GPS device path
         self.baud_rate = 9600  # GPS device baud rate
 
         self.running = False
         self.gps_thread = None
         self.target_coords = None
 
-    def cmd_followgsc(self, args):
+    def cmd_start(self, args):
         """Command to start/stop following GSC"""
         if len(args) == 0:
             self.running = not self.running
@@ -37,6 +41,47 @@ class FollowGCSModule(mp_module.MPModule):
                 self.gps_thread.start()
         else:
             self.console.writeln("Follow GSC: Stopping")
+
+    def cmd_set_altitude(self, args):
+        """Command to set target altitude."""
+        if len(args) != 1:
+            self.console.error("Usage: alt <altitude>")
+            return
+        try:
+            self.altitude = float(args[0])
+            self.console.writeln(f"Target altitude set to {self.altitude} meters")
+        except ValueError:
+            self.console.error("Invalid altitude value")
+
+    def cmd_set_acceptance_radius(self, args):
+        """Command to set acceptance radius."""
+        if len(args) != 1:
+            self.console.error("Usage: radius <radius>")
+            return
+        try:
+            self.acceptance_radius = float(args[0])
+            self.console.writeln(f"Acceptance radius set to {self.acceptance_radius} meters")
+        except ValueError:
+            self.console.error("Invalid radius value")
+
+    def cmd_set_gps_device(self, args):
+        """Command to set GPS device path."""
+        if len(args) != 1:
+            self.console.error("Usage: device <device_path>")
+            return
+        self.gps_device = args[0]
+        self.console.writeln(f"GPS device set to {self.gps_device}")
+
+    def cmd_set_baud_rate(self, args):
+        """Command to set GPS device baud rate."""
+        if len(args) != 1:
+            self.console.error("Usage: baud <baud_rate>")
+            return
+        try:
+            self.baud_rate = int(args[0])
+            self.console.writeln(f"GPS baud rate set to {self.baud_rate}")
+        except ValueError:
+            self.console.error("Invalid baud rate value")
 
     def _gps_loop(self):
         """Thread loop to read GPS data and send follow commands."""
