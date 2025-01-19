@@ -33,12 +33,12 @@ class FollowGCSJoystickModule(mp_module.MPModule):
             return
 
         if self.running:
-            self.console.info("Follow GCS Joystick: Starting")
+            self.console.writeln("Follow GCS Joystick: Starting")
             if not self.gps_thread or not self.gps_thread.is_alive():
                 self.gps_thread = threading.Thread(target=self._gps_loop, daemon=True)
                 self.gps_thread.start()
         else:
-            self.console.info("Follow GCS Joystick: Stopping")
+            self.console.writeln("Follow GCS Joystick: Stopping")
 
     def _gps_loop(self):
         """Thread loop to read GPS data and send follow commands."""
@@ -66,7 +66,7 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         lon = self._nmea_to_decimal(fields[4], fields[5])
 
         self.target_coords = (lat, lon)
-        self.console.info(f"Target coordinates: {lat}, {lon}")
+        self.console.writeln(f"Target coordinates: {lat}, {lon}")
 
         # Send MAVLink command to follow target coordinates
         if self.master and self.target_coords and not self.joystick_override:
