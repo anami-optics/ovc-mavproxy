@@ -4,10 +4,10 @@ import serial
 import threading
 import time
 
-class FollowGCSJoystickModule(mp_module.MPModule):
+class JoystickFollowGCSModule(mp_module.MPModule):
     def __init__(self, mpstate):
-        super(FollowGCSJoystickModule, self).__init__(mpstate, "followgcsjoystick", "Follow Ground Station Coordinates with Joystick")
-        self.add_command("followgcsjoystick", self.cmd_followgcsjoystick, "Start/Stop following the GCS GPS with joystick control")
+        super(JoystickFollowGCSModule, self).__init__(mpstate, "joystickfollowgcs", "Follow Ground Station Coordinates with Joystick")
+        self.add_command("joystickfollowgcs", self.cmd_joystickfollowgcs, "Start/Stop following the GCS GPS with joystick control")
 
         self.altitude = 10.0  # Target altitude (meters)
         self.acceptance_radius = 5.0  # Acceptance radius (meters)
@@ -20,7 +20,7 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         self.target_coords = None
         self.joystick_override = None
 
-    def cmd_followgcsjoystick(self, args):
+    def cmd_joystickfollowgcs(self, args):
         """Command to start/stop following GCS"""
         if len(args) == 0:
             self.running = not self.running
@@ -29,7 +29,7 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         elif args[0].lower() in ["stop", "off"]:
             self.running = False
         else:
-            self.console.error("Usage: followgcsjoystick [start|stop]")
+            self.console.error("Usage: joystickfollowgcs [start|stop]")
             return
 
         if self.running:
@@ -120,4 +120,4 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         pass
 
 def init(mpstate):
-    return FollowGCSJoystickModule(mpstate)
+    return JoystickFollowGCSModule(mpstate)

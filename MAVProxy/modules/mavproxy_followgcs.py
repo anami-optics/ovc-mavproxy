@@ -4,10 +4,10 @@ import serial
 import threading
 import time
 
-class FollowGSCModule(mp_module.MPModule):
+class FollowGCSModule(mp_module.MPModule):
     def __init__(self, mpstate):
-        super(FollowGSCModule, self).__init__(mpstate, "followgsc", "Follow Ground Station Coordinates")
-        self.add_command("followgsc", self.cmd_followgsc, "Start/Stop following the GSC GPS")
+        super(FollowGCSModule, self).__init__(mpstate, "followgcs", "Follow Ground Station Coordinates")
+        self.add_command("followgcs", self.cmd_followgsc, "Start/Stop following the GSC GPS")
 
         self.altitude = 10.0  # Target altitude (meters)
         self.acceptance_radius = 5.0  # Acceptance radius (meters)
@@ -27,7 +27,7 @@ class FollowGSCModule(mp_module.MPModule):
         elif args[0].lower() in ["stop", "off"]:
             self.running = False
         else:
-            self.console.error("Usage: followgsc [start|stop]")
+            self.console.error("Usage: followgcs [start|stop]")
             return
 
         if self.running:
@@ -99,4 +99,4 @@ class FollowGSCModule(mp_module.MPModule):
         pass
 
 def init(mpstate):
-    return FollowGSCModule(mpstate)
+    return FollowGCSModule(mpstate)
