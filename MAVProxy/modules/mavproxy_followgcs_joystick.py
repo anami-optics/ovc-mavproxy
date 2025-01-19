@@ -5,10 +5,10 @@ import serial
 import threading
 import time
 
-class FollowGSCModule(mp_module.MPModule):
+class FollowGCSJoystickModule(mp_module.MPModule):
     def __init__(self, mpstate):
-        super(FollowGSCModule, self).__init__(mpstate, "followgsc", "Follow Ground Station Coordinates")
-        self.add_command("followgsc", self.cmd_followgsc, "Start/Stop following the GSC GPS")
+        super(FollowGCSJoystickModule, self).__init__(mpstate, "followgcsjoystick", "Follow Ground Station Coordinates with Joystick")
+        self.add_command("followgcsjoystick", self.cmd_followgcsjoystick, "Start/Stop following the GCS GPS with joystick control")
 
         self.settings = MPSetting(
             [
@@ -19,14 +19,15 @@ class FollowGSCModule(mp_module.MPModule):
             ]
         )
 
-        self.add_completion_function(["followgsc"], self.settings.completion)
+        self.add_completion_function(["followgcsjoystick"], self.settings.completion)
 
         self.running = False
         self.gps_thread = None
         self.target_coords = None
+        self.joystick_override = None
 
-    def cmd_followgsc(self, args):
-        """Command to start/stop following GSC"""
+    def cmd_followgcsjoystick(self, args):
+        """Command to start/stop following GCS"""
         if len(args) == 0:
             self.running = not self.running
         elif args[0].lower() in ["start", "on"]:
@@ -34,16 +35,16 @@ class FollowGSCModule(mp_module.MPModule):
         elif args[0].lower() in ["stop", "off"]:
             self.running = False
         else:
-            self.console.error("Usage: followgsc [start|stop]")
+            self.console.error("Usage: followgcsjoystick [start|stop]")
             return
 
         if self.running:
-            self.console.info("Follow GSC: Starting")
+            self.console.info("Follow GCS Joystick: Starting")
             if not self.gps_thread or not self.gps_thread.is_alive():
                 self.gps_thread = threading.Thread(target=self._gps_loop, daemon=True)
                 self.gps_thread.start()
         else:
-            self.console.info("Follow GSC: Stopping")
+            self.console.info("Follow GCS Joystick: Stopping")
 
     def _gps_loop(self):
         """Thread loop to read GPS data and send follow commands."""
@@ -54,6 +55,8 @@ class FollowGSCModule(mp_module.MPModule):
                         line = gps_serial.readline().decode('ascii', errors='ignore').strip()
                         if line.startswith('$GPGGA'):
                             self._process_gps_data(line)
+                        if self.settings.joystick:
+                            self._process_joystick_input()
             except serial.SerialException as e:
                 self.console.error(f"GPS device error: {e}")
                 time.sleep(5)
@@ -72,7 +75,7 @@ class FollowGSCModule(mp_module.MPModule):
         self.console.info(f"Target coordinates: {lat}, {lon}")
 
         # Send MAVLink command to follow target coordinates
-        if self.master and self.target_coords:
+        if self.master and self.target_coords and not self.joystick_override:
             self.master.mav.mission_item_send(
                 self.settings.target_system,
                 self.settings.target_component,
@@ -86,6 +89,23 @@ class FollowGSCModule(mp_module.MPModule):
                 self.target_coords[1],  # longitude
                 self.settings.alt  # altitude
             )
+
+    def _process_joystick_input(self):
+        """Process joystick inputs for manual override."""
+        joystick_data = self.get_joystick()
+        if joystick_data:
+            self.joystick_override = True
+            roll, pitch, throttle, yaw = joystick_data
+            self.master.mav.manual_control_send(
+                self.settings.target_system,
+                int(roll * 1000),  # x-axis
+                int(pitch * 1000),  # y-axis
+                int(throttle * 1000),  # z-axis
+                int(yaw * 1000),  # r-axis
+                0  # buttons (unused)
+            )
+        else:
+            self.joystick_override = False
 
     def _nmea_to_decimal(self, value, direction):
         """Convert NMEA latitude/longitude to decimal degrees."""
@@ -106,4 +126,4 @@ class FollowGSCModule(mp_module.MPModule):
         pass
 
 def init(mpstate):
-    return FollowGSCModule(mpstate)
+    return FollowGCSJoystickModule(mpstate)
