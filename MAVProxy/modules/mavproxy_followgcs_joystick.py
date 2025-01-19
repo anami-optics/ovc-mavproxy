@@ -1,6 +1,5 @@
 from pymavlink import mavutil
 from MAVProxy.modules.lib import mp_module
-from MAVProxy.modules.lib.mp_settings import MPSetting
 import serial
 import threading
 import time
@@ -10,16 +9,11 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         super(FollowGCSJoystickModule, self).__init__(mpstate, "followgcsjoystick", "Follow Ground Station Coordinates with Joystick")
         self.add_command("followgcsjoystick", self.cmd_followgcsjoystick, "Start/Stop following the GCS GPS with joystick control")
 
-        self.settings = MPSetting(
-            [
-                ("alt", float, 10.0),
-                ("radius", float, 5.0),
-                ("device", str, "/dev/ttyUSB0"),
-                ("baud", int, 9600)
-            ]
-        )
-
-        self.add_completion_function(["followgcsjoystick"], self.settings.completion)
+        self.altitude = 10.0  # Target altitude (meters)
+        self.acceptance_radius = 5.0  # Acceptance radius (meters)
+        self.gps_device = "/dev/ttyUSB0"  # GPS device path
+        self.baud_rate = 9600  # GPS device baud rate
+        self.enable_joystick = True  # Enable joystick control
 
         self.running = False
         self.gps_thread = None
@@ -50,12 +44,12 @@ class FollowGCSJoystickModule(mp_module.MPModule):
         """Thread loop to read GPS data and send follow commands."""
         while self.running:
             try:
-                with serial.Serial(self.settings.device, self.settings.baud, timeout=1) as gps_serial:
+                with serial.Serial(self.gps_device, self.baud_rate, timeout=1) as gps_serial:
                     while self.running:
                         line = gps_serial.readline().decode('ascii', errors='ignore').strip()
                         if line.startswith('$GPGGA'):
                             self._process_gps_data(line)
-                        if self.settings.joystick:
+                        if self.enable_joystick:
                             self._process_joystick_input()
             except serial.SerialException as e:
                 self.console.error(f"GPS device error: {e}")
@@ -87,7 +81,7 @@ class FollowGCSJoystickModule(mp_module.MPModule):
                 0, 0, 0, 0,  # params 1-4 (unused)
                 self.target_coords[0],  # latitude
                 self.target_coords[1],  # longitude
-                self.settings.alt  # altitude
+                self.altitude  # altitude
             )
 
     def _process_joystick_input(self):
