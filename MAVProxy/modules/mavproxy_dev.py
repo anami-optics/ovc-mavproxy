@@ -8,8 +8,8 @@ import math
 class DevModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(DevModule, self).__init__(mpstate, "dev", "Development module for testing", multi_vehicle=True)
-        self.add_command("dev start", self.cmd_start, "Start dev module")
-        self.add_command("dev stop", self.cmd_start, "Stop dev module")
+        self.add_command("devstart", self.cmd_start, "Start dev module")
+        self.add_command("devstop", self.cmd_start, "Stop dev module")
 
         self.offset_x = 0.0  # Offset in the X direction (meters, relative to GCS)
         self.offset_y = 0.0  # Offset in the Y direction (meters, relative to GCS)
@@ -22,9 +22,9 @@ class DevModule(mp_module.MPModule):
         """Command to start/stop following GSC"""
         if len(args) == 0:
             self.running = not self.running
-        elif args[0].lower() in ["start", "on"]:
+        elif args[0].lower() in ["devstart", "on"]:
             self.running = True
-        elif args[0].lower() in ["stop", "off"]:
+        elif args[0].lower() in ["devstop", "off"]:
             self.running = False
         else:
             self.console.error("Usage: dev [start|stop]")
