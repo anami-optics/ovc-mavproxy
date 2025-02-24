@@ -8,11 +8,12 @@ import math
 class FollowGCSModule(mp_module.MPModule):
     def __init__(self, mpstate):
         super(FollowGCSModule, self).__init__(mpstate, "followgcs", "Follow Ground Station Coordinates with Offset and multi_vehicle", multi_vehicle=True)
-        self.add_command("start", self.cmd_start, "Start/Stop following the GSC GPS")
-        self.add_command("alt", self.cmd_set_altitude, "Set target altitude")
-        self.add_command("radius", self.cmd_set_acceptance_radius, "Set acceptance radius")
-        self.add_command("device", self.cmd_set_gps_device, "Set GPS device path")
-        self.add_command("baud", self.cmd_set_baud_rate, "Set GPS device baud rate")
+        self.add_command("followgcs start", self.cmd_start, "Start following the GSC GPS")
+        self.add_command("followgcs stop", self.cmd_start, "Stop following the GSC GPS")
+        self.add_command("followgcs alt", self.cmd_set_altitude, "Set target altitude")
+        self.add_command("followgcs radius", self.cmd_set_acceptance_radius, "Set acceptance radius")
+        self.add_command("followgcs device", self.cmd_set_gps_device, "Set GPS device path")
+        self.add_command("followgcs baud", self.cmd_set_baud_rate, "Set GPS device baud rate")
 
         self.altitude = 5.0  # Target altitude (meters)
         self.acceptance_radius = 2.0  # Acceptance radius (meters)
