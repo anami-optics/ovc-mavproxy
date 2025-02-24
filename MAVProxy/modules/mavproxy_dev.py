@@ -42,10 +42,9 @@ class DevModule(mp_module.MPModule):
         """Thread loop to read GPS data and send follow commands."""
         while self.running:
             try:
-                with serial.Serial(self.gps_device, self.baud_rate, timeout=1) as gps_serial:
-                    while self.running:
-                        # Process joystick input dynamically
-                        self._process_joystick_input()
+                while self.running:
+                    # Process joystick input dynamically
+                    self._process_joystick_input()
             except serial.SerialException as e:
                 self.console.error(f"GPS device error: {e}")
                 time.sleep(5)
