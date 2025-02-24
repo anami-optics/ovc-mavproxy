@@ -7,7 +7,7 @@ import math
 
 class FollowGCSModule(mp_module.MPModule):
     def __init__(self, mpstate):
-        super(FollowGCSModule, self).__init__(mpstate, "followgcs", "Follow Ground Station Coordinates with Offset")
+        super(FollowGCSModule, self).__init__(mpstate, "followgcs", "Follow Ground Station Coordinates with Offset and multi_vehicle", multi_vehicle=True)
         self.add_command("start", self.cmd_start, "Start/Stop following the GSC GPS")
         self.add_command("alt", self.cmd_set_altitude, "Set target altitude")
         self.add_command("radius", self.cmd_set_acceptance_radius, "Set acceptance radius")
